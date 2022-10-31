@@ -1,0 +1,4 @@
+Filrar pacotes ETH em broadcast ff:ff:ff...
+Filrar pacotes DHCP
+Abrir a estrutura do pacote DHCP (discovery, offer, request, ack)
+Escrever (send) o pacote com as informações do rementente e dados (IP, mascara, gw, dns) #Requer uma tabela de enderecoes disponibilizados
