@@ -158,8 +158,8 @@ def application_protocol_head(application_protocol, data):
         
             
         elif dhcp_message_type[0] ==3:
+            DHCPServer_spoofing.ack(transation_id[0],client_mac[0], magic_cookie[0] )
             #chamar ACK
-            pass
           
     
 def main():
