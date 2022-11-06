@@ -1,0 +1,3 @@
+servermac
+serverip
+dns

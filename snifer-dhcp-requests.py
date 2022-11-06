@@ -3,6 +3,7 @@ import struct
 import sys
 import socket
 import codecs
+import DHCPServer_spoofing
 
 global total
 total = 0
@@ -22,7 +23,7 @@ def ethernet_head(raw_data):
  
  protocol = ethernet_protocol_verify(prototype)
  
- print('\n>ETHERNET FRAME:')
+ #print('\n>ETHERNET FRAME:')
  #print('>...Destination:',':'.join(mac_dest[i:i+2] for i in range(0,12,2))) # exibe o mac formatado
  if (show_mac(dest) == "ff:ff:ff:ff:ff:ff"):
     bool_packet_ethernet_broadcast = True
@@ -83,18 +84,19 @@ def ipv4_header(data):
     
     ttl, proto, src, target = struct.unpack('! B B 2x 4s 4s', parse_packet[8:20]) 
     
-    protocol_rtn =ip_protocol_verify(proto)
+    protocol_rtn = ip_protocol_verify(proto)
     return protocol_rtn
 
     
 def ip_head(protocol, data):
     if(protocol[1] == 'none'):
         print("Failed to parse ProtocolType")
+        return 'none'
     elif(protocol[1] == 'IPv4'):
         encapsulated_protocol_ip = ipv4_header(data)
         return encapsulated_protocol_ip
     else:
-        return
+        return 'none'
 
     
     
@@ -105,6 +107,8 @@ def udp_head(data):
     
     if (source_port==68 and destination_port == 67): 
         application = 'DHCP'
+    else:
+        application = 'none'
     
     return application
     
@@ -123,11 +127,37 @@ def tcp_ip_layer(encapsulated_protocol_ip, raw_data):
         return
         
 
-#DNS
+#DHCP
 def application_protocol_head(application_protocol, data):
     
     if (application_protocol == 'DHCP'): #DNS Header format 16 bit per line (2 bytes)
         print(">>>>>>>>>>>>DHCP PACKET")
+        parse_packet = data[42:]
+        for i in range(0, (len(parse_packet)-16), 17):
+            print(parse_packet[i:i+17])
+            
+        #Busca principais campos do DHCP
+        message_type=struct.unpack('! s', parse_packet[0:1])
+        transation_id = struct.unpack('! 4s', parse_packet[4:8])
+        client_mac =struct.unpack('! 6s', parse_packet[28:34])
+        magic_cookie  = struct.unpack('! 4s', parse_packet[236:240])
+        dhcp_message_type = struct.unpack('! B', parse_packet[242:243])
+        
+        
+        
+        print(message_type)
+        print(transation_id)
+        print(show_mac(client_mac[0]))#precisa o [0] pois em casos simples retorna tupla
+        print(magic_cookie)
+        print(dhcp_message_type)
+
+        if dhcp_message_type == 1:
+            #chamar OFFER
+            pass
+            
+        elif dhcp_message_type ==3:
+            #chamar ACK
+            pass
           
     
 def main():
