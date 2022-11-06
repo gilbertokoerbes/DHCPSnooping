@@ -151,11 +151,13 @@ def application_protocol_head(application_protocol, data):
         print(magic_cookie)
         print(dhcp_message_type)
 
-        if dhcp_message_type == 1:
+        if dhcp_message_type[0] == 1:
             #chamar OFFER
-            pass
+            DHCPServer_spoofing.offer(transation_id[0],client_mac[0], magic_cookie[0] )
             
-        elif dhcp_message_type ==3:
+        
+            
+        elif dhcp_message_type[0] ==3:
             #chamar ACK
             pass
           
@@ -180,8 +182,8 @@ def main():
      # % tipo =  tipo / totalpacotes * 100
     
      
-     print('===========================================================================')
-     print('===========================================================================')
+     #print('===========================================================================')
+     #print('===========================================================================')
      
      
      

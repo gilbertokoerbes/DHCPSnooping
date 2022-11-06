@@ -4,15 +4,17 @@ import sys
 import netifaces
 
 
+
 s = socket(AF_PACKET, SOCK_RAW)
 
-if len(sys.argv) <= 1:
-    print("Interface not found")
-else:
-    s.bind((sys.argv[1], 0))
-    get_mac = netifaces.ifaddresses(sys.argv[1])[netifaces.AF_LINK]
-    print("this MAC= ", get_mac[0].get('addr'))
-
+# if len(sys.argv) <= 1:
+#     print("Interface not found")
+# else:
+#     s.bind((sys.argv[1], 0))
+#     get_mac = netifaces.ifaddresses(sys.argv[1])[netifaces.AF_LINK]
+#     print("this MAC= ", get_mac[0].get('addr'))
+#s.bind(('enp0s3', 0))
+s.bind(('enp0s8', 0))
 
 src_addr = b'\x01\x02\x03\x04\x05\x06'#mac do nosso host
 dst_addr = b'\xff\xff\xff\xff\xff\xff'#
@@ -42,6 +44,7 @@ udp_checksum = b'\x57\x5e'
 udp_header = udp_source_port + udo_destination_port + udp_length + udp_checksum
 
 def offer(transation_id, client_mac, magic_cookie,):
+    print('>>>>OFFER<<<')
     #DHCP
     message_type=b'\x02' #reply
     hw_type=b'\x01'
@@ -52,15 +55,17 @@ def offer(transation_id, client_mac, magic_cookie,):
     seconds_elapsed= b'\x00\x00'
     bootp_flags=b'\x80\x00'
     client_ip_address= b'\x00\x00\x00\x00'
-    your_ip_address=b'\xc0\xa8\x0f\x05' #ip que está sendo oferecido ao cliente
+    your_ip_address=b'\xc0\xa8\x0f\xde' #ip que está sendo oferecido ao cliente
     next_server_ip=b'\x00\x00\x00\x00'
     relay_agent_ip=b'\x00\x00\x00\x00'
-    client_mac=b'\x80\x00\x27\x41\x14\xec'#parametro vem da solicitacao
+    #client_mac=b'\x80\x00\x27\x41\x14\xec'#parametro vem da solicitacao
+    client_mac
     client_hw_padding=b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
     names_not_given = b''.join(b'\x00' for x in range(192))  #preenchimento server host 64 bytes em 00 e bootfile em com 128 bytes em 00 
-    magic_cookie=b'\x63\x82\x53\x63'   #parametro vem da solicitacao
+    #magic_cookie=b'\x63\x82\x53\x63'   #parametro vem da solicitacao
+    magic_cookie
     dhcp_message_type= b'\x35\x01' + b'\x02' #ultimo byte é do tipo, ack, offer etc
-    dhcp_server_identifier=b'\x36\x04'+ b'\xc0\xa8\x0f\x01' #ip do nosso servidor DHCP
+    dhcp_server_identifier=b'\x36\x04'+ b'\xc0\xa8\x0f\x05' #ip do nosso servidor DHCP
 
     #identificacao do campo + tempo segundos
     lease_time=b'\x33\x04' +b'\x00\x03\x4b\xc0' 
@@ -68,10 +73,10 @@ def offer(transation_id, client_mac, magic_cookie,):
     rebinding_time = b'\x3b\x04' + b'\x00\x02\xe2\x48'
 
     broadcast_address= b'\x1c\x04' +  b'\xc0\xa8\x0f\xff'
-    subnet_mask= b'\x01\x04' + b'\xff\xff\xff\xff'
-    router= b'\x03\x04' +  b'\xc0\xa8\x0f\x01' #ip do gateway da rede, no caso, nosso servidor DHCP/Server
-    domain_name_server= b'\x06\x04' + b'\xc0\xa8\x0f\x01' #aqui vai o IP do nosso server
-    netbios_tcpip_ns= b'\x2c\x04' + b'\xc0\xa8\x0f\x01'
+    subnet_mask= b'\x01\x04' + b'\xff\xff\xff\x00'
+    router= b'\x03\x04' +  b'\xc0\xa8\x0f\x05' #ip do gateway da rede, no caso, nosso servidor DHCP/Server
+    domain_name_server= b'\x06\x04' + b'\x00\x08\x08\x08' #aqui vai o IP do nosso server
+    netbios_tcpip_ns= b'\x2c\x04' + b'\xc0\xa8\x0f\x05'
     end = b'\xff'
     padding=  b'\x00\x00'
 
@@ -79,7 +84,7 @@ def offer(transation_id, client_mac, magic_cookie,):
                     + client_ip_address + your_ip_address + next_server_ip + relay_agent_ip + client_mac + client_hw_padding + names_not_given \
                         + magic_cookie + dhcp_message_type + dhcp_server_identifier + lease_time + renewal_time + rebinding_time + broadcast_address \
                             + subnet_mask + router + domain_name_server + netbios_tcpip_ns + end + padding
-                            
+    s.send(ethernet_header + ip_header + udp_header + dhcp_packet)
 
 
 
@@ -89,4 +94,3 @@ def offer(transation_id, client_mac, magic_cookie,):
 
 #fullpacketpack = struct.pack('! H',fullpacketencode)
 
-s.send(ethernet_header + ip_header + udp_header + dhcp_packet)
