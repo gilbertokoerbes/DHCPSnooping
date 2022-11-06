@@ -4,7 +4,10 @@ import struct
 import sys
 import netifaces
 
-
+global SERVER_IP
+SERVER_IP = b'\xc0\xa8\x64\x02'
+global DNS_IP
+DNS_IP = b'\x00\x08\x08\x08'
 
 s = socket(AF_PACKET, SOCK_RAW)
 
@@ -30,8 +33,8 @@ identification= b'\x00\x00'
 flags_offset= b'\x00\x00'
 ttl= b'\x40'# ou bytearray([64]).hex() converter ttl original
 procotol= b'\x11' #protocolo 17 - UDP 
-checksum = b'\xa9\xf8' #offer exaple
-source_address= b'\xc0\xa8\x0f\x05'
+checksum = b'\x54\xfb' #offer exaple
+source_address= SERVER_IP
 destination_address= b'\xff\xff\xff\xff'
 ip_header = version_and_headerlength + qos + totalLength + identification + flags_offset + \
             ttl + procotol + checksum + source_address + destination_address
@@ -79,7 +82,7 @@ def offer(transation_id, client_mac, magic_cookie):
     #magic_cookie=b'\x63\x82\x53\x63'   #parametro vem da solicitacao
     magic_cookie
     dhcp_message_type= b'\x35\x01' + b'\x02' #ultimo byte é do tipo, ack, offer etc
-    dhcp_server_identifier=b'\x36\x04'+ b'\xc0\xa8\x0f\x05' #ip do nosso servidor DHCP
+    dhcp_server_identifier=b'\x36\x04'+ SERVER_IP #ip do nosso servidor DHCP
 
     #identificacao do campo + tempo segundos
     lease_time=b'\x33\x04' +b'\x00\x03\x4b\xc0' 
@@ -88,9 +91,9 @@ def offer(transation_id, client_mac, magic_cookie):
 
     broadcast_address= b'\x1c\x04' +  b'\xc0\xa8\x0f\xff'
     subnet_mask= b'\x01\x04' + b'\xff\xff\xff\x00'
-    router= b'\x03\x04' +  b'\xc0\xa8\x0f\x05' #ip do gateway da rede, no caso, nosso servidor DHCP/Server
-    domain_name_server= b'\x06\x04' + b'\x00\x08\x08\x08' #aqui vai o IP do nosso server
-    netbios_tcpip_ns= b'\x2c\x04' + b'\xc0\xa8\x0f\x05'
+    router= b'\x03\x04' +  SERVER_IP #ip do gateway da rede, no caso, nosso servidor DHCP/Server
+    domain_name_server= b'\x06\x04' + DNS_IP #aqui vai o IP do nosso server
+    netbios_tcpip_ns= b'\x2c\x04' + SERVER_IP
     end = b'\xff'
     padding=  b'\x00\x00'
 
@@ -124,7 +127,7 @@ def ack(transation_id, client_mac, magic_cookie):
     #magic_cookie=b'\x63\x82\x53\x63'   #parametro vem da solicitacao
     magic_cookie
     dhcp_message_type= b'\x35\x01' + b'\x05' #ultimo byte é do tipo, ack, offer etc
-    dhcp_server_identifier=b'\x36\x04'+ b'\xc0\xa8\x0f\x05' #ip do nosso servidor DHCP
+    dhcp_server_identifier=b'\x36\x04'+ SERVER_IP #ip do nosso servidor DHCP
 
     #identificacao do campo + tempo segundos
     lease_time=b'\x33\x04' +b'\x00\x03\x4b\xc0' 
@@ -133,9 +136,9 @@ def ack(transation_id, client_mac, magic_cookie):
 
     broadcast_address= b'\x1c\x04' +  b'\xc0\xa8\x0f\xff'
     subnet_mask= b'\x01\x04' + b'\xff\xff\xff\x00'
-    router= b'\x03\x04' +  b'\xc0\xa8\x0f\x05' #ip do gateway da rede, no caso, nosso servidor DHCP/Server
-    domain_name_server= b'\x06\x04' + b'\x00\x08\x08\x08' #aqui vai o IP do nosso server
-    netbios_tcpip_ns= b'\x2c\x04' + b'\xc0\xa8\x0f\x05'
+    router= b'\x03\x04' +  SERVER_IP #ip do gateway da rede, no caso, nosso servidor DHCP/Server
+    domain_name_server= b'\x06\x04' + DNS_IP #aqui vai o IP do nosso server
+    netbios_tcpip_ns= b'\x2c\x04' + SERVER_IP
     end = b'\xff'
     padding=  b'\x00\x00'
 
